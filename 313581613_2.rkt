@@ -3,7 +3,7 @@
 
 #| BNF for SE 
 
-<SE> ::= {string <char> <SE_char} (1) **Only Chars -> string
+<SE> ::=  {string <char> <SE_char} (1) **Only Chars -> string
         | {string-length <SE_str> } (2) **Only string -> Number
         | {string-append <string> <SE_str>}(3) **only strings ->string
         | {string-insert <SE_str> <char> <SE_num>} (4) string ^ char ^ number -> string 
@@ -68,7 +68,7 @@ TODO ADD COMMENTS!!!
     
   
 
- (define p2345 (createPolynomial '(2 3 4 5))) 
+(define p2345 (createPolynomial '(2 3 4 5))) 
 (test (p2345 0) =>  (+ (* 2 (expt 0 0)) (* 3 (expt 0 1)) (* 4 (expt 0 2)) (* 5 (expt 0 3)))) 
 (test (p2345 4) =>  (+ (* 2 (expt 4 0)) (* 3 (expt 4 1)) (* 4 (expt 4 2)) (* 5 (expt 4 3)))) 
 (test (p2345 11) => (+ (* 2 (expt 11 0)) (* 3 (expt 11 1)) (* 4 (expt 11 2)) (* 5 (expt 11 3)))) 
@@ -122,10 +122,18 @@ TODO ADD COMMENTS!!!
   ;; parses a string containing a PLANG expression to a PLANG AST
 (define (parse str) 
     (let ([code (string->sexpr str)]) 
-      (match code)
-      [(list (rest(list 'poly x)))(not(null?(list )))) (error 'parse "bad parse at ~s" code)]
-      [(list (not(null?(rest(list 'poly))))(null?(list ))) (error 'parse "bad parse at ~s" code)]
-      [(list (not(null?(rest(list 'poly))))(not(null?(list )))) (poly )]
+      (match code
+        [(list (list 'poly a...) (list d...)) (Poly (parse-list(list 'poly a...))
+                                              (parse-list (list d...)))]
+        ;[(list (list 'poly a b) (list d e f)) (Poly (parse-list(list a b c)) (parse-list(list d e f)))]
+        [(list (list 'poly) (list d e )) (error 'parse "at least one coefficient is required in ~s" code)]
+        [(list (list 'poly a b )(list)) (error 'parse "at least one point is required in ~s" code)])))
+
+
+(: parse-list : (Listof Sexpr) -> (Listof AE))
+(define (parse-list listxpr)
+  (map parse-sexpr listxpr))
+      
       
 
 
@@ -135,8 +143,9 @@ TODO ADD COMMENTS!!!
 (test (parse "{{poly 1 2 3} {1 2 3}}")  
      => (Poly (list (Num 1) (Num 2) (Num 3))  
               (list (Num 1) (Num 2) (Num 3)))) 
-(test (parse "{{poly } {1 2} }")  
-     =error> "parse: at least one coefficient is                        required in ((poly) (1 2))") 
-(test (parse "{{poly 1 2} {} }")       =error> "parse: at least one point is  
-                       required in ((poly 1 2) ())") 
+(test (parse "{{poly } {1 2} }")   =error> "parse: at least one coefficient is required in ((poly) (1 2))") 
+(test (parse "{{poly 1 2 } {} }")       =error> "parse: at least one point is required in ((poly 1 2) ())") 
 
+(test (parse "{{poly 1 2 } {1 2 }}")  
+     => (Poly (list (Num 1) (Num 2))  
+              (list (Num 1) (Num 2)))) 
