@@ -3,11 +3,12 @@
 
 #| BNF for SE 
 
-<SE> ::=  {string <char> <SE_char} (1) **Only Chars -> string
-        | {string-length <SE_str> } (2) **Only string -> Number
-        | {string-append <string> <SE_str>}(3) **only strings ->string
-        | {string-insert <SE_str> <char> <SE_num>} (4) string ^ char ^ number -> string 
-        | {number->string <SE_num>)(5) **Natural Number -> string
+<SE> ::= <string> | <char> | <num
+        |  {string <char> <SE_char} (1)                      **Only Chars -> string
+        | {string-length <SE_str> } (2)                     **Only string -> Number
+        | {string-append <string> <SE_str>}(3)              **only strings ->string
+        | {string-insert <SE_str> <char> <SE_num>} (4)      **string ^ char ^ number -> string 
+        | {number->string <SE_num>)(5)                      **Natural Number -> string
 
 
 <SE_char> ::= <char> (6)| {string <char> <SE_char> } (7)
@@ -42,17 +43,45 @@ SE=3>
 {string-append "12" {string-insert "34 #\5 67} =>
 "1234567"
 
-
-
-
 |#
+
+
+
+
+
+;;2
+
+;;helper function to calculate square numbers
+(: square : Number -> Number)
+(define (square x) (* x x))
+#|
+the map make new list with square values,
+and the foldl sum all the square numbers
+|#
+(: sum-of-squares : (Listof Number) -> Number)
+(define (sum-of-squares list)
+  (foldl + 0 (map square list)))
+
+
+(test (sum-of-squares '(1 2 4 3)) => 30)
+(test (sum-of-squares '(2 2 2 2)) => 16)
+(test (sum-of-squares '(0 0 0 0 )) => 0)
+(test (sum-of-squares '(1 2 3 4 5 6)) => 91)
+(test (sum-of-squares '(10 20 30 40)) => 3000)
+(test (sum-of-squares '(-1 -1 1 -1)) => 4)
+(test (sum-of-squares '(-10 -2 1 5)) => 130)
+(test (sum-of-squares '(-1 -1 1 -1 1 -1 1 -1 1 -1)) => 10)
+(test (sum-of-squares '(0.2 1/2 1 2)) => 5.29)
 
 
 
 
 #|
 3A
-TODO ADD COMMENTS!!!
+create Polynomial is a function that returns a function .
+poly is calctulating recursively the value of the polynom.
+polyX send to poly the X to use the power and the list of k numbers we've got, in another way of saying
+thist polyX start the action.
 |#
 
 
@@ -122,6 +151,11 @@ TODO ADD COMMENTS!!!
 
 #|
   3B
+  The parse function is taking the given string and switching it to a s-expression with string->sexpr
+  after that we are looking for a match with the given list of s-expressions first list should start with
+  'poly and have at least one S-expression with it.
+  second list should have also at least on S-expression.
+  otherwise the given string is incorrect and we threw an error for it.
   |#
   (: parse : String -> PLANG) 
   ;; parses a string containing a PLANG expression to a PLANG AST
@@ -136,6 +170,11 @@ TODO ADD COMMENTS!!!
         [(list (list 'poly l ...) (list r ...)) (Poly (parse-list l)
                                                       (parse-list r))]
         [else (error 'parse "Another unknown error is occured in ~s" code)])))
+
+
+#|
+using parse-list to send each s-expression alone from the list to parse it to AE using map 
+|#
 
 (: parse-list : (Listof Sexpr) -> (Listof AE))
 (define (parse-list listxpr)
